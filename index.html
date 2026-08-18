@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#ff8ab3" />
+    <title>Brew You — Coffee Personality Quiz</title>
+    <style>
+      :root {
+        --ink: #352451;
+        --cream: #fffdf7;
+        --yellow: #ffcf4e;
+        --pink: #ffa3c3;
+        --blue: #9fe5ff;
+        --mint: #75e6bc;
+        --purple: #9175ff;
+      }
+
+      * { box-sizing: border-box; }
+      body {
+        min-height: 100vh; margin: 0; color: var(--ink);
+        font-family: ui-rounded, "Nunito", "Arial Rounded MT Bold", Arial, sans-serif;
+        background:
+          radial-gradient(circle at 10% 12%, #fff2a7 0 5%, transparent 5.2%),
+          radial-gradient(circle at 89% 14%, #75e6bc 0 4%, transparent 4.2%),
+          linear-gradient(135deg, #ffdc66, #ff8ab3 52%, #9175ff);
+        display: grid; place-items: center; padding: 26px 18px;
+      }
+      .shell { width: min(100%, 690px); position: relative; }
+      .orb { position: fixed; opacity: .32; pointer-events: none; font-size: clamp(42px, 8vw, 86px); }
+      .orb.one { top: 7%; left: 7%; transform: rotate(-15deg); }
+      .orb.two { right: 8%; bottom: 7%; transform: rotate(16deg); }
+      .quiz-card {
+        background: var(--cream); border: 5px solid var(--ink); border-radius: 34px;
+        padding: clamp(24px, 5vw, 42px); box-shadow: 13px 13px 0 var(--ink); text-align: center;
+      }
+      .brand { display: inline-flex; align-items: center; gap: 8px; font-size: 15px; font-weight: 900; letter-spacing: .075em; text-transform: uppercase; }
+      .brand span { font-size: 24px; }
+      .badge {
+        display: inline-block; margin-top: 22px; background: var(--mint); border: 3px solid var(--ink);
+        border-radius: 999px; padding: 7px 13px; font-size: 13px; font-weight: 900; letter-spacing: .06em;
+      }
+      .progress { height: 13px; margin: 14px 0 28px; overflow: hidden; border: 3px solid var(--ink); border-radius: 99px; background: #efe8db; }
+      .progress > div { height: 100%; width: 0; background: var(--purple); border-radius: inherit; transition: width .3s ease; }
+      h1 { font-size: clamp(34px, 6vw, 52px); line-height: .96; margin: 15px 0; letter-spacing: -.04em; }
+      .intro { max-width: 480px; margin: 0 auto 26px; font-size: 18px; line-height: 1.4; font-weight: 700; }
+      .choices { display: grid; gap: 11px; text-align: left; }
+      button {
+        width: 100%; color: var(--ink); background: var(--yellow); border: 3px solid var(--ink); border-radius: 17px;
+        box-shadow: 4px 4px 0 var(--ink); padding: 16px 18px; font: inherit; font-size: 17px; font-weight: 900;
+        line-height: 1.2; cursor: pointer; text-align: left; transition: transform .12s, box-shadow .12s, filter .12s;
+      }
+      button:hover, button:focus-visible { transform: translate(-2px, -2px); box-shadow: 6px 6px 0 var(--ink); filter: brightness(1.04); outline: none; }
+      button:active { transform: translate(2px, 2px); box-shadow: 2px 2px 0 var(--ink); }
+      .choices button:nth-child(2) { background: var(--pink); }
+      .choices button:nth-child(3) { background: var(--blue); }
+      .choices button:nth-child(4) { background: var(--mint); }
+      .button-icon { display: inline-block; width: 33px; font-size: 23px; vertical-align: middle; }
+      .start { max-width: 350px; margin: 8px auto 0; text-align: center; font-size: 19px; }
+      .tiny { margin: 22px 0 0; font-size: 13px; font-weight: 800; opacity: .72; }
+      .result-image { width: min(100%, 340px); aspect-ratio: 1.35; object-fit: cover; border: 4px solid var(--ink); border-radius: 23px; box-shadow: 7px 7px 0 var(--ink); margin: 10px auto 21px; display: block; }
+      .recommendation { display: inline-block; margin: 0 0 13px; padding: 8px 14px; border: 3px solid var(--ink); border-radius: 999px; background: var(--yellow); font-size: 15px; font-weight: 900; }
+      .tagline { margin: 0 0 23px; font-size: 20px; font-weight: 800; }
+      .hidden { display: none; }
+      @media (max-width: 460px) { .quiz-card { border-width: 4px; box-shadow: 8px 8px 0 var(--ink); } button { padding: 14px; font-size: 16px; } }
+    </style>
+  </head>
+  <body>
+    <div class="orb one">✦</div><div class="orb two">☕</div>
+    <main class="shell">
+      <section class="quiz-card" aria-live="polite">
+        <div class="brand"><span>☕</span> Brew You</div>
+        <div id="quiz-view">
+          <div id="badge" class="badge">COFFEE PERSONALITY QUIZ</div>
+          <div id="progress-wrap" class="progress hidden" aria-label="Quiz progress"><div id="progress-bar"></div></div>
+          <h1 id="heading">What kind of coffee person are you?</h1>
+          <p id="subheading" class="intro">Six delightfully nerdy questions. One deliciously accurate coffee destiny.</p>
+          <div id="choices" class="choices"></div>
+          <p id="note" class="tiny">Choose your instincts. There are no wrong answers — just different brews.</p>
+        </div>
+        <div id="result-view" class="hidden">
+          <div class="badge">YOUR COFFEE DESTINY</div>
+          <h1 id="result-name"></h1>
+          <img id="result-image" class="result-image" alt="" />
+          <p id="recommendation" class="recommendation"></p>
+          <p id="tagline" class="tagline"></p>
+          <button id="restart" class="start" type="button">↻ Take the quiz again</button>
+        </div>
+      </section>
+    </main>
+    <script>
+      const personalities = [
+        { name: 'Bold Adventurer', drink: 'Double Espresso', tagline: 'You live for intensity.', image: 'public/bold-adventurer-espresso.jpg' },
+        { name: 'Cozy Classic', drink: 'Medium Roast Drip', tagline: 'Comfort in every cup.', image: 'public/cozy-classic-mug.jpg' },
+        { name: 'Sweet Enthusiast', drink: 'Caramel Latte', tagline: "Life's too short for bitter.", image: 'public/sweet-enthusiast-latte.jpg' },
+        { name: 'Practical Pragmatist', drink: "Large Drip, Whatever's Fresh", tagline: 'Just make it work.', image: 'public/practical-pragmatist-drip.jpg' }
+      ];
+      const questions = [
+        ['Your ideal fantasy quest starts with…', [['⚔️', 'Charging toward danger', 0], ['🏡', 'Packing snacks and a map', 1], ['✨', 'Choosing the most enchanted outfit', 2], ['🛠️', 'Checking the route and supplies', 3]]],
+        ['Pick a movie-night role', [['🎬', '“Let’s watch the wildest action movie”', 0], ['🛋️', '“Blanket, comfort movie, zero stress”', 1], ['🍿', '“I brought themed treats!”', 2], ['📋', '“What’s shortest and best reviewed?”', 3]]],
+        ['You find a mysterious portal. You…', [['🚀', 'Step through immediately', 0], ['🔦', 'Invite trusted friends first', 1], ['🌈', 'Take a selfie beside it', 2], ['🧭', 'Figure out where it leads', 3]]],
+        ['Your superhero power is:', [['⚡', 'Super speed', 0], ['🛡️', 'A protective force field', 1], ['💫', 'Making everything sparkle', 2], ['🧠', 'Instantly solving problems', 3]]],
+        ['At a wizard-school feast, you choose:', [['🔥', 'The spiciest-looking dish', 0], ['🥖', 'Familiar comfort food', 1], ['🍰', 'The most extravagant dessert', 2], ['🥗', 'The filling option that makes sense', 3]]],
+        ['Your spaceship is running low on fuel. You…', [['🌌', 'Try an uncharted shortcut', 0], ['🤝', 'Keep the crew calm and together', 1], ['🎨', 'Make the emergency beacon look fabulous', 2], ['🔧', 'Calculate the safest route home', 3]]]
+      ];
+      const $ = id => document.getElementById(id);
+      let current = 0, scores = [0, 0, 0, 0];
+      function begin() { current = 0; scores = [0, 0, 0, 0]; $('result-view').classList.add('hidden'); $('quiz-view').classList.remove('hidden'); renderQuestion(); }
+      function renderStart() {
+        $('choices').innerHTML = '<button class="start" type="button">Start the quiz →</button>';
+        $('choices').firstElementChild.addEventListener('click', begin);
+      }
+      function renderQuestion() {
+        const [question, answers] = questions[current];
+        $('badge').textContent = `QUESTION ${current + 1} OF ${questions.length}`;
+        $('progress-wrap').classList.remove('hidden');
+        $('progress-bar').style.width = `${(current / questions.length) * 100}%`;
+        $('heading').textContent = question; $('subheading').textContent = 'Pick the answer that feels most like you.'; $('note').textContent = 'Go with your first instinct.';
+        $('choices').innerHTML = '';
+        answers.forEach(([icon, label, score]) => {
+          const button = document.createElement('button'); button.type = 'button';
+          button.innerHTML = `<span class="button-icon">${icon}</span>${label}`;
+          button.addEventListener('click', () => { scores[score]++; current++; current === questions.length ? showResult() : renderQuestion(); });
+          $('choices').append(button);
+        });
+      }
+      function showResult() {
+        const winner = personalities[scores.indexOf(Math.max(...scores))];
+        $('quiz-view').classList.add('hidden'); $('result-view').classList.remove('hidden');
+        $('result-name').textContent = winner.name; $('recommendation').textContent = `Your order: ${winner.drink}`;
+        $('tagline').textContent = winner.tagline; $('result-image').src = winner.image; $('result-image').alt = `${winner.name} coffee recommendation`;
+      }
+      $('restart').addEventListener('click', begin); renderStart();
+    </script>
+  </body>
+</html>
